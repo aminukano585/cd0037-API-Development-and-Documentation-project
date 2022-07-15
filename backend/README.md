@@ -71,22 +71,142 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 
 You will need to provide detailed documentation of your API endpoints including the URL, request parameters, and the response body. Use the example below as a reference.
 
-### Documentation Example
+### Endpoints Documentation
 
 `GET '/api/v1.0/categories'`
 
-- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
-- Returns: An object with a single key, `categories`, that contains an object of `id: category_string` key: value pairs.
+- Returns: An object with two keys, `success` that signifies success of the request and `categories`, that contains an object of `id: category_string` key: value pairs.
 
 ```json
 {
-  "1": "Science",
-  "2": "Art",
-  "3": "Geography",
-  "4": "History",
-  "5": "Entertainment",
-  "6": "Sports"
+  "categories": {
+    "1": "Science", 
+    "2": "Art", 
+    "3": "Geography", 
+    "4": "History", 
+    "5": "Entertainment", 
+    "6": "Sports"
+  }, 
+  "success": true
+}
+```
+
+`GET '/api/v1.0/questions'`
+
+- Request Arguments: None
+- Returns: An object with five keys, `success` that signifies success of the request and `categories`, that contains an object of `id: category_string` key: value pairs. The `current_category` which should be null, the paginated list of `questions` in batches of 10, and the `total_questions`.
+
+```json
+{
+  "categories": {
+    "1": "Science", 
+    ...
+  }, 
+  "current_category": null, 
+  "questions": [
+    {
+      "answer": "Apollo 13", 
+      "category": 5, 
+      "difficulty": 4, 
+      "id": 2, 
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+    }, 
+    ...
+  ], 
+  "success": true, 
+  "total_questions": 19
+}
+```
+
+`DELETE '/api/v1.0/questions/question_id'`
+
+- Request Arguments: `question_id` of the question to be deleted
+- Returns: An object with two keys, `success` that signifies success of the request and `deleted`, that contains the id of the deleted question.
+
+```json
+{
+  "success": true,
+  "deleted": 2
+}
+```
+
+`POST '/api/v1.0/questions'`
+
+- Request Arguments: parameters in the body of a request
+- Returns: An object with two keys, `success` that signifies success of the request and `created`, that contains the created question.
+
+```json
+{
+  "success": true,
+  "created": {
+    "answer": "Muhammad Ali", 
+    "category": 4, 
+    "difficulty": 1, 
+    "id": 9, 
+    "question": "What boxer's original name is Cassius Clay?"
+  }
+}
+```
+
+- If `search_term` is included in the body of the request, it returns result with the keys, `success` that signifies success of the request, the `questions` that satisfies the search, the number of `total_questions`, and the `current_category` which should be null.
+
+```json
+{ 
+  "current_category": null, 
+  "questions": [
+    {
+      "answer": "Apollo 13", 
+      "category": 5, 
+      "difficulty": 4, 
+      "id": 2, 
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+    }, 
+    ...
+  ], 
+  "success": true, 
+  "total_questions": 4
+}
+```
+
+`GET '/api/v1.0/categories/category_id/questions'`
+
+- Request Arguments: None
+- Returns: An object with four keys, `success` that signifies success of the request and the `current_category` of the questions, the paginated list of `questions` in batches of 10, and the `total_questions`.
+
+```json
+{
+  "current_category": "Science", 
+  "questions": [
+    {
+      "answer": "Apollo 13", 
+      "category": 5, 
+      "difficulty": 4, 
+      "id": 2, 
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+    }, 
+    ...
+  ], 
+  "success": true, 
+  "total_questions": 3
+}
+```
+
+`POST '/api/v1.0/quizzes'`
+
+- Request Arguments: parameters in the body of a request
+- Returns: An object with two keys, `success` that signifies success of the request and `question`, that contains a random question. If `previous_question` is included in the request parameters, it will not be included.
+
+```json
+{
+  "success": true,
+  "question": {
+    "answer": "Muhammad Ali", 
+    "category": 4, 
+    "difficulty": 1, 
+    "id": 9, 
+    "question": "What boxer's original name is Cassius Clay?"
+  }
 }
 ```
 

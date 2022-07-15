@@ -33,7 +33,115 @@ class TriviaTestCase(unittest.TestCase):
     TODO
     Write at least one test for each test for successful operation and for expected errors.
     """
+    def test_read_all_categories(self):
+        res = self.client().get('/api/v1.0/categories')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['categories'])
 
+    def test_read_all_categories_not_allowed(self):
+        res = self.client().delete('/api/v1.0/categories')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Not allowed')
+
+    def test_read_questions(self):
+        res = self.client().get('/api/v1.0/questions')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(len(data['categories']))
+        self.assertTrue(len(data['questions']))
+        self.assertTrue(data['total_questions'])
+        self.assertEqual(data['current_category'], None)
+
+    def test_read_questions_bad_request(self):
+        res = self.client().get('/api/v1.0/questions?page=5')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Bad request')
+
+    def test_delete_question(self):
+        question_id = Question.query.first().format()['id']
+        res = self.client().delete('/api/v1.0/questions/' + str(question_id))
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+    def test_delete_question_not_found(self):
+        res = self.client().delete('/api/v1.0/questions/weird-id')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Not found')
+
+    def test_create_question(self):
+        new_question = {
+            'question': 'Who are you?', 'answer': 'Human', 'category': 1, 'difficulty': 1
+        }
+        res = self.client().post('/api/v1.0/questions', json=new_question)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['created']['answer'], 'Human')
+
+    def test_create_question_unprocessable_resource(self):
+        res = self.client().post('/api/v1.0/questions', json={})
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Unprocessable resource')
+
+    def test_search_question(self):
+        res = self.client().post('/api/v1.0/questions', json={"searchTerm": "title"})
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(len(data['questions']))
+        self.assertTrue(data['total_questions'])
+        self.assertEqual(data['current_category'], None)
+
+    def test_search_question_bad_request(self):
+        res = self.client().post('/api/v1.0/questions', json={"searchTerm": "~!@"})
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Bad request')
+
+    def test_read_questions_in_category(self):
+        category_id = Category.query.first().format()['id']
+        res = self.client().get('/api/v1.0/categories/' + str(category_id) + '/questions')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(len(data['questions']))
+        self.assertTrue(data['total_questions'])
+        self.assertEqual(data['current_category'], category_id)
+
+    def test_read_questions_in_category_not_found(self):
+        res = self.client().get('/api/v1.0/categories/12928/questions')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Not found')
+
+    def test_quiz_question(self):
+        category = Category.query.first()
+        res = self.client().post('/api/v1.0/quizzes', json={"quiz_category": category.format()})
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['question'])
+
+    def test_quiz_question_unprocessable_resource(self):
+        res = self.client().post('/api/v1.0/quizzes')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Unprocessable resource')
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
