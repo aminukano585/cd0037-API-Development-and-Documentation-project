@@ -13,3 +13,7 @@ ehthumbs.db
 Thumbs.db
 env/
 frontend/node_modules/
+
+# Environment Variables #
+######################
+.env
