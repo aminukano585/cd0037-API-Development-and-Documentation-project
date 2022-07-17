@@ -1,3 +1,5 @@
+from models import setup_db, Question, Category
+from flaskr import create_app
 import os
 from dotenv import load_dotenv
 import unittest
@@ -6,14 +8,13 @@ from flask_sqlalchemy import SQLAlchemy
 
 load_dotenv()
 
-from flaskr import create_app
-from models import setup_db, Question, Category
 
 DB_HOST = os.getenv('DB_HOST', '127.0.0.1:5432')
 DB_USER = os.getenv('DB_USER', 'postgres')
 DB_PASSWORD = os.getenv('DB_PASSWORD', 'postgres')
 TEST_DB_NAME = os.getenv('TEST_DB_NAME', 'trivia_test')
-TEST_DB_PATH = 'postgresql+psycopg2://{}:{}@{}/{}'.format(DB_USER, DB_PASSWORD, DB_HOST, TEST_DB_NAME)
+TEST_DB_PATH = 'postgresql+psycopg2://{}:{}@{}/{}'.format(
+    DB_USER, DB_PASSWORD, DB_HOST, TEST_DB_NAME)
 
 
 class TriviaTestCase(unittest.TestCase):
@@ -32,15 +33,17 @@ class TriviaTestCase(unittest.TestCase):
             self.db.init_app(self.app)
             # create all tables
             self.db.create_all()
-    
+
     def tearDown(self):
         """Executed after reach test"""
         pass
 
     """
     TODO
-    Write at least one test for each test for successful operation and for expected errors.
+    Write at least one test for each test for successful operation
+    and for expected errors.
     """
+
     def test_read_all_categories(self):
         res = self.client().get('/api/v1.0/categories')
         data = json.loads(res.data)
@@ -88,8 +91,10 @@ class TriviaTestCase(unittest.TestCase):
 
     def test_create_question(self):
         new_question = {
-            'question': 'Who are you?', 'answer': 'Human', 'category': 1, 'difficulty': 1
-        }
+            'question': 'Who are you?',
+            'answer': 'Human',
+            'category': 1,
+            'difficulty': 1}
         res = self.client().post('/api/v1.0/questions', json=new_question)
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
@@ -104,7 +109,8 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['message'], 'Unprocessable resource')
 
     def test_search_question(self):
-        res = self.client().post('/api/v1.0/questions', json={"searchTerm": "title"})
+        res = self.client().post('/api/v1.0/questions',
+                                 json={"searchTerm": "title"})
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
@@ -113,7 +119,10 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['current_category'], None)
 
     def test_search_question_bad_request(self):
-        res = self.client().post('/api/v1.0/questions', json={"searchTerm": "~!@"})
+        res = self.client().post(
+            '/api/v1.0/questions',
+            json={
+                "searchTerm": "~!@"})
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 400)
         self.assertEqual(data['success'], False)
@@ -121,7 +130,8 @@ class TriviaTestCase(unittest.TestCase):
 
     def test_read_questions_in_category(self):
         category_id = Category.query.first().format()['id']
-        res = self.client().get('/api/v1.0/categories/' + str(category_id) + '/questions')
+        res = self.client().get('/api/v1.0/categories/' + str(category_id) +
+                                '/questions')
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
@@ -138,7 +148,8 @@ class TriviaTestCase(unittest.TestCase):
 
     def test_quiz_question(self):
         category = Category.query.first()
-        res = self.client().post('/api/v1.0/quizzes', json={"quiz_category": category.format()})
+        res = self.client().post('/api/v1.0/quizzes',
+                                 json={"quiz_category": category.format()})
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
@@ -150,6 +161,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 422)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'Unprocessable resource')
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
