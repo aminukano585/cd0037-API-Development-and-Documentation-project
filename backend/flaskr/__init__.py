@@ -2,6 +2,7 @@ from crypt import methods
 import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql.expression import func
 from flask_cors import CORS
 import random
 
@@ -248,8 +249,12 @@ def create_app(test_config=None):
             if 'previous_questions' in body:
                 previous_questions = body['previous_questions']
 
-            question = Question.query.filter(
-                Question.category == body['quiz_category']['id'], Question.id.notin_(previous_questions)).first()
+            if body['quiz_category']['id'] == 0:
+                question = Question.query.filter(
+                    Question.id.notin_(previous_questions)).order_by(func.random()).first()
+            else:
+                question = Question.query.filter(
+                    Question.category == body['quiz_category']['id'], Question.id.notin_(previous_questions)).order_by(func.random()).first()
 
             return jsonify(
                 {
